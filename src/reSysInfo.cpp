@@ -501,6 +501,76 @@ void sysinfoPublishTaskList()
 
 #endif // CONFIG_MQTT_TASKLIST_ENABLE
 
+char * sysinfoGetTaskList()
+{
+  if (esp_heap_free_check()) {
+    TaskStatus_t *pxTaskStatusArray = nullptr;
+    volatile UBaseType_t uxArraySize;
+    uint32_t ulTotalRunTime;
+
+    // Take a snapshot of the number of tasks in case it changes while this function is executing.
+    uxArraySize = uxTaskGetNumberOfTasks();
+    // Allocate a TaskStatus_t structure for each task.  An array could be allocated statically at compile time.
+    pxTaskStatusArray = (TaskStatus_t*)esp_malloc(uxArraySize * sizeof(TaskStatus_t));
+    if (pxTaskStatusArray) {
+      char * json_task = nullptr;
+      char * json_summary = nullptr;
+      // Generate raw status information about each task.
+      uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
+      // For each populated position in the pxTaskStatusArray array
+      for (UBaseType_t x=0; x<uxArraySize; x++) {
+        json_task = malloc_stringf(
+          "| %02d | %11.11s | %d | %1.1s | %02d | %02d | %d | %d | %08x | %04d |\n",
+          pxTaskStatusArray[x].xTaskNumber, 
+          pxTaskStatusArray[x].pcTaskName, 
+          #ifdef CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+          pxTaskStatusArray[x].xCoreID > 1 ? 8 : pxTaskStatusArray[x].xCoreID, 
+          #else
+          9,
+          #endif // CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+          sysinfoTaskListState(pxTaskStatusArray[x].eCurrentState), 
+          pxTaskStatusArray[x].uxCurrentPriority, pxTaskStatusArray[x].uxBasePriority,
+          //pxTaskStatusArray[x].ulRunTimeCounter, (float)pxTaskStatusArray[x].ulRunTimeCounter / ulTotalRunTime,
+          pxTaskStatusArray[x].ulRunTimeCounter, ulTotalRunTime,
+          pxTaskStatusArray[x].pxStackBase, pxTaskStatusArray[x].usStackHighWaterMark);
+        if (json_task) {
+          if (json_summary) {
+            char* json_temp = json_summary;
+            json_summary = malloc_stringf("%s%s", json_temp, json_task);
+            free(json_temp);
+          } else {
+            json_summary = malloc_string(json_task);
+          };
+          free(json_task);
+        };
+      };
+      // The array is no longer needed, free the memory it consumes
+      vPortFree(pxTaskStatusArray);
+
+      // Publish data
+
+      if (json_summary) {
+            char* json_temp = json_summary;
+            json_summary = malloc_stringf(
+              "<code>"
+              "+----+-------------+---+---+----+----+---+---+----------+------+\n"
+              "| id | task name   | c | s | cp | bp |rtc|trt|    stack | mark |\n"
+              "+----+-------------+---+---+----+----+---+---+----------+------+\n"
+              "%s</code>", json_temp);
+            free(json_temp);
+        return json_summary;
+      } else {
+        return (char *)"No info";
+      }
+    } else {
+      return (char *)"No task list...";
+    }
+  } else {
+    rlog_w(logTAG, "Failed to get task list...");
+    return (char *)"Failed to get task list...";
+  }
+}
+
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------- Event handlers ---------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------
