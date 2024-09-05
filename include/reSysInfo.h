@@ -69,6 +69,7 @@ char* mqttTopicTaskListGet();
 void  mqttTopicTaskListFree();
 void  sysinfoPublishTaskList();
 #endif // CONFIG_MQTT_TASKLIST_ENABLE
+char* sysinfoGetTaskList();
 
 bool sysinfoEventHandlerRegister();
 bool sysinfoEventHandlerUnregister();
