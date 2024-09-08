@@ -16,7 +16,9 @@
 #include "def_consts.h"
 #include "reEsp32.h"
 #if CONFIG_MQTT_TIME_ENABLE
+#ifndef CONFIG_MQTT1_OFF
 #include "reMqtt.h"
+#endif 
 #endif // CONFIG_MQTT_TIME_ENABLE
 
 static const char* logTAG = "SINF";
