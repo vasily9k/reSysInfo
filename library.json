@@ -1,6 +1,6 @@
 {
   "name": "reSysInfo",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Module for collecting and publishing system statistics about the controller's operation, including date and time",
   "keywords": "system",
   "authors":
@@ -9,6 +9,11 @@
       "name": "Alexander Razzhivin",
       "email": "kotyara12@yandex.ru",
       "url": "https://kotyara12.ru"
+    },
+    {
+      "name": "Vasily K",
+      "email": "vasily9k@gmail.com",
+      "url": "https://github.com/vasily9k"
     }
   ],
   "license": "MIT",
