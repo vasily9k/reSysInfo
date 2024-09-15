@@ -39,9 +39,12 @@ typedef struct {
 
 void sysinfoWorkTimeInc();
 worktime_t getWorkTime();
-
 void sysinfoFixDateTime(const struct tm* currTime);
 str_datetime_t getDateTimeStrings();
+
+char* sysinfoGetTaskList();
+
+#ifndef CONFIG_MQTT1_OFF
 #if CONFIG_MQTT_TIME_ENABLE
 char* mqttTopicDateTimeCreate(const bool primary);
 char* mqttTopicDateTimeGet();
@@ -69,10 +72,10 @@ char* mqttTopicTaskListGet();
 void  mqttTopicTaskListFree();
 void  sysinfoPublishTaskList();
 #endif // CONFIG_MQTT_TASKLIST_ENABLE
-char* sysinfoGetTaskList();
 
 bool sysinfoEventHandlerRegister();
 bool sysinfoEventHandlerUnregister();
+#endif // CONFIG_MQTT1_OFF
 
 #ifdef __cplusplus
 }
